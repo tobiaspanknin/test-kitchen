@@ -35,6 +35,7 @@ module Kitchen
 
       default_config :require_chef_omnibus, true
       default_config :chef_omnibus_url, "https://www.getchef.com/chef/install.sh"
+      default_config :chef_bindir, "/opt/chef/bin"
       default_config :run_list, []
       default_config :attributes, {}
       default_config :cookbook_files_glob, %w[README.* metadata.{json,rb}
@@ -94,7 +95,7 @@ module Kitchen
 
           should_update_chef() {
             case "#{flag}" in
-              true|`chef-solo -v | cut -d " " -f 2`) return 1 ;;
+              true|`#{chef_bindir.join('chef-solo')} -v | cut -d " " -f 2`) return 1 ;;
               latest|*) return 0 ;;
             esac
           }
@@ -399,6 +400,11 @@ module Kitchen
         Kitchen.mutex.synchronize do
           Chef::Librarian.new(cheffile, tmpbooks_dir, logger).resolve
         end
+      end
+
+      # @return [Pathname]
+      def chef_bindir
+        @chef_bindir ||= Pathname.new(config[:chef_bindir])
       end
     end
   end

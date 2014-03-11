@@ -28,7 +28,6 @@ module Kitchen
     class ChefZero < ChefBase
 
       default_config :client_rb, {}
-      default_config :ruby_bindir, "/opt/chef/embedded/bin"
       default_config :json_attributes, true
 
       def create_sandbox
@@ -41,8 +40,6 @@ module Kitchen
       def prepare_command
         return if local_mode_supported?
 
-        ruby_bin = config[:ruby_bindir]
-
         # use Bourne (/bin/sh) as Bash does not exist on all Unix flavors
         #
         # * we are installing latest chef in order to get chef-zero and
@@ -51,10 +48,10 @@ module Kitchen
         <<-PREPARE.gsub(/^ {10}/, '')
           sh -c '
           #{chef_client_zero_env(:export)}
-          if ! #{sudo("#{ruby_bin}/gem")} list chef-zero -i >/dev/null; then
+          if ! #{sudo(chef_bindir.join('gem'))} list chef-zero -i >/dev/null; then
             echo ">>>>>> Attempting to use chef-zero with old version of Chef"
             echo "-----> Installing chef zero dependencies"
-            #{sudo("#{ruby_bin}/gem")} install chef --no-ri --no-rdoc --conservative
+            #{sudo(chef_bindir.join('gem'))} install chef --no-ri --no-rdoc --conservative
           fi'
         PREPARE
       end
@@ -69,11 +66,11 @@ module Kitchen
         end
 
         if local_mode_supported?
-          ["#{sudo('chef-client')} -z"].concat(args).join(" ")
+          ["#{sudo(chef_bindir.join('chef-client'))} -z"].concat(args).join(" ")
         else
           [
             chef_client_zero_env,
-            sudo("#{config[:ruby_bindir]}/ruby"),
+            sudo(chef_bindir.join('ruby')),
             "#{config[:root_path]}/chef-client-zero.rb"
           ].concat(args).join(" ")
         end
