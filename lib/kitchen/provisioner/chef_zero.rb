@@ -64,7 +64,7 @@ module Kitchen
       def run_command
         level = config[:log_level] == :info ? :auto : config[:log_level]
 
-        cmd = modern? ? "#{sudo("chef-client")} --local-mode" : shim_command
+        cmd = modern? ? "#{chef_bindir.join('chef-client')} --local-mode" : shim_command
         args = [
           "--config #{config[:root_path]}/client.rb",
           "--log_level #{level}",
@@ -77,9 +77,8 @@ module Kitchen
         if config[:json_attributes]
           args << "--json-attributes #{config[:root_path]}/dna.json"
         end
-        if config[:log_file]
-          args << "--logfile #{config[:log_file]}"
-        end
+
+
 
         Util.wrap_command([cmd, *args].join(" "))
       end

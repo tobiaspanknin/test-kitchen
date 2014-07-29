@@ -16,13 +16,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require "fileutils"
-require "pathname"
-require "json"
+require 'fileutils'
+require 'pathname'
+require 'json'
 
-require "kitchen/provisioner/chef/berkshelf"
-require "kitchen/provisioner/chef/librarian"
-require "kitchen/util"
+require 'kitchen/provisioner/chef/berkshelf'
+require 'kitchen/provisioner/chef/librarian'
+require 'kitchen/util'
 
 module Kitchen
 
@@ -35,6 +35,7 @@ module Kitchen
 
       default_config :require_chef_omnibus, true
       default_config :chef_omnibus_url, "https://www.getchef.com/chef/install.sh"
+      default_config :chef_bindir, "/opt/chef/bin"
       default_config :run_list, []
       default_config :attributes, {}
       default_config :log_file, nil
@@ -432,6 +433,11 @@ module Kitchen
         Kitchen.mutex.synchronize do
           Chef::Librarian.new(cheffile, tmpbooks_dir, logger).resolve
         end
+      end
+
+      # @return [Pathname]
+      def chef_bindir
+        @chef_bindir ||= Pathname.new(config[:chef_bindir])
       end
     end
   end
